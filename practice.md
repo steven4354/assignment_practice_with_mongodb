@@ -266,7 +266,7 @@ db.products.mapReduce(
 ###3.
 Find the potential revenue of each product (how much can each product make if the entire remaining stock is sold?)
 
-```
+```js
 db.products.mapReduce(
   function(){emit(this._id, this.price * this.stock)},
   function(key, values){ return values},
@@ -275,4 +275,76 @@ db.products.mapReduce(
     out: "departmentsales"
   }
   ).find()
+```
+###4.
+
+```
+db.products.mapReduce(
+  function(){emit(this.department, this.sales)},
+  function(key, values){ return Array.sum(values)},
+  {
+    query: {},
+    out: "departmentsales"
+  }
+  ).find()
+```
+
+```js
+db.products.mapReduce(
+  function(){emit(this._id, this.price * this.stock + this.sales * this.price)},
+  function(key, values){ return values},
+  {
+    query: {},
+    out: {inline:1}
+  }
+  ).find()
+```
+## Single purpose aggregation
+How many products are there?
+```js
+db.products.count({})
+```
+How many products are out of stock?
+
+```js
+db.products.count({
+  stock:0
+})
+```
+How many products are fully stocked? (100)
+
+```js
+db.products.count({
+  stock:100
+})
+```
+How many products are almost out of stock? (>= 5)
+
+```js
+db.products.count({
+  stock:{$lte:5}
+})
+```
+
+What are all the unique names of all the departments?
+
+```js
+db.products.distinct('department');
+```
+What are all the unique names of product colors?
+
+```js
+db.products.distinct('color')
+```
+
+Find the total number of out of stock products for each department.
+
+```js
+db.products.group({
+  key: {department: 1},
+  cond: { stock: {$eq:0}},
+  reduce: function(cur, result) {result.count += 1},
+  initial: {count:0}
+})
+
 ```
