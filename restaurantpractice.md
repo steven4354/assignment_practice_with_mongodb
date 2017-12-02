@@ -70,4 +70,5 @@ db.restaurants.aggregate([
       number: {$sum: 1}
       }}
   ])
+
 List unique names of all restaurants with at least 1 grade of A or B sorted in reverse alphabetical order
